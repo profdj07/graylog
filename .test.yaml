@@ -1,0 +1,46 @@
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: global-play-api-nodejs
+  namespace: dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: global-play-api-nodejs
+  template:
+    metadata:
+      labels:
+        app: global-play-api-nodejs
+    spec:
+       containers:
+        - name: global-play-api-nodejs
+          image: 172785665182.dkr.ecr.us-east-1.amazonaws.com/global-play-api-nodejs:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+          envFrom:
+            - secretRef:
+                name: global-play-api-nodejs
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: global-play-api-nodejs-svc
+  namespace: dev
+spec:
+  clusterIP: 172.20.122.205
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    targetPort: 4000
+    protocol: TCP
+  selector:
+    app: global-play-api-nodejs
+
+
+

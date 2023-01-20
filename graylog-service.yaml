@@ -1,20 +1,33 @@
 apiVersion: v1
 kind: Service
 metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yaml
+    kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    service: graylog
-  name: graylogsrv
+    io.kompose.service: graylog
+  name: graylog
 spec:
-  #type: NodePort
   ports:
   - name: "9000"
     port: 9000
     targetPort: 9000
-    #nodePort: 32328
+  - name: "1514"
+    port: 1514
+    targetPort: 1514
+  - name: 1514-udp
+    port: 1514
+    protocol: UDP
+    targetPort: 1514
   - name: "12201"
     port: 12201
     targetPort: 12201
-  clusterIP: None
+  - name: 12201-udp
+    port: 12201
+    protocol: UDP
+    targetPort: 12201
   selector:
-    service: graylog
+    io.kompose.service: graylog
+status:
+  loadBalancer: {}

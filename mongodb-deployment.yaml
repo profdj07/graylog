@@ -6,13 +6,13 @@ metadata:
     kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
   labels:
-    io.kompose.service: elasticsearch
-  name: elasticsearch
+    io.kompose.service: mongodb
+  name: mongodb
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: elasticsearch
+      io.kompose.service: mongodb
   strategy:
     type: Recreate
   template:
@@ -22,29 +22,20 @@ spec:
         kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        io.kompose.service: elasticsearch
+        io.kompose.service: mongodb
     spec:
       containers:
-      - env:
-        - name: ES_JAVA_OPTS
-          value: -Xms512m -Xmx512m
-        - name: http.host
-          value: 0.0.0.0
-        - name: network.host
-          value: 0.0.0.0
-        - name: transport.host
-          value: localhost
-        image: docker.elastic.co/elasticsearch/elasticsearch-oss:7.10.2
+      - image: mongo:4.2
         imagePullPolicy: ""
-        name: elasticsearch
+        name: mongodb
         resources: {}
         volumeMounts:
-        - mountPath: /usr/share/elasticsearch/data
-          name: graylog-es-data
+        - mountPath: /data/db
+          name: graylog-mongo-data
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
-      - name: graylog-es-data
+      - name: graylog-mongo-data
         persistentVolumeClaim:
-          claimName: graylog-es-data
+          claimName: graylog-mongo-data
 status: {}

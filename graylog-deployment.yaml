@@ -1,34 +1,65 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
+  annotations:
+    kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yaml
+    kompose.version: 1.21.0 (992df58d8)
   creationTimestamp: null
+  labels:
+    io.kompose.service: graylog
   name: graylog
 spec:
   replicas: 1
-  strategy: {}
+  selector:
+    matchLabels:
+      io.kompose.service: graylog
+  strategy:
+    type: Recreate
   template:
     metadata:
+      annotations:
+        kompose.cmd: /snap/kompose/19/kompose-linux-amd64 convert -f docker-compose.yaml
+        kompose.version: 1.21.0 (992df58d8)
       creationTimestamp: null
       labels:
-        service: graylog
+        io.kompose.service: graylog
     spec:
       containers:
-      - env:
-        - name: GRAYLOG_WEB_ENDPOINT_URI
-          value: http://graylog/api
+      - command:
+        - /usr/bin/tini
+        - --
+        - wait-for-it
+        - elasticsearch:9200
+        - --
+        - /docker-entrypoint.sh
+        env:
+        - name: GRAYLOG_HTTP_EXTERNAL_URI
+          value: http://127.0.0.1:9000/
         - name: GRAYLOG_PASSWORD_SECRET
-          value: ******
+          value: somepasswordpepper
         - name: GRAYLOG_ROOT_PASSWORD_SHA2
-          value: 5D5E792708BFA15F0AB42E817B4E69379777D2722E0529DFB031C0B847DB137D
-        - name: GRAYLOG_ELASTICSEARCH_HOSTS
-          value: http://elasticsearchsrv:9200
-        #- name: GRAYLOG_MONGODB_URI
-         # value: http://mongodb//mongo/graylog
-        image: eldhodoc/graylogserver
+          value: 8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918
+        - name: GRAYLOG_WEB_ENDPOINT_URI
+          value: http://127.0.0.1:9000/api
+        image: graylog/graylog:4.2
+        imagePullPolicy: ""
         name: graylog
         ports:
         - containerPort: 9000
+        - containerPort: 1514
+        - containerPort: 1514
+          protocol: UDP
         - containerPort: 12201
+        - containerPort: 12201
+          protocol: UDP
         resources: {}
+        volumeMounts:
+        - mountPath: /usr/share/graylog/data
+          name: graylog-graylog-data
       restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: graylog-graylog-data
+        persistentVolumeClaim:
+          claimName: graylog-graylog-data
 status: {}
